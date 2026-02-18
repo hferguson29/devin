@@ -82,6 +82,32 @@ Be thorough. Check all file types including JS, TS, Python, config files, and te
   }
 });
 
+app.get("/api/sessions/:sessionId", async (req, res) => {
+  const { sessionId } = req.params;
+
+  try {
+    const response = await fetch(`${DEVIN_API_BASE}/session/${sessionId}`, {
+      headers: {
+        Authorization: `Bearer ${DEVIN_API_KEY}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorBody = await response.text();
+      console.error("Devin API error:", response.status, errorBody);
+      return res
+        .status(response.status)
+        .json({ error: "Failed to fetch session status", details: errorBody });
+    }
+
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    console.error("Error fetching session:", err.message);
+    res.status(500).json({ error: "Failed to fetch session status" });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });

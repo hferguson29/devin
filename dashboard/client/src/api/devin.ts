@@ -12,10 +12,27 @@ export interface SessionResponse {
   status?: string;
 }
 
+export interface SessionDetails {
+  session_id: string;
+  url: string;
+  status: string;
+  pull_requests?: { pr_url: string; pr_state: string }[];
+}
+
 export async function fetchFlags(): Promise<FeatureFlag[]> {
   const res = await fetch(`${API_BASE}/api/flags`);
   if (!res.ok) {
     throw new Error("Failed to fetch flags");
+  }
+  return res.json();
+}
+
+export async function fetchSessionStatus(
+  sessionId: string
+): Promise<SessionDetails> {
+  const res = await fetch(`${API_BASE}/api/sessions/${sessionId}`);
+  if (!res.ok) {
+    throw new Error("Failed to fetch session status");
   }
   return res.json();
 }
