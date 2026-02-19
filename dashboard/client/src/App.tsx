@@ -1,12 +1,22 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Github } from "lucide-react";
 import FlagTable from "./components/FlagTable";
 import RemovalHistory from "./components/RemovalHistory";
 
 type Tab = "flags" | "history";
 
+export interface ResolvedFlag {
+  prUrl: string;
+  sessionUrl: string;
+}
+
 function App() {
   const [tab, setTab] = useState<Tab>("flags");
+  const [resolvedFlags, setResolvedFlags] = useState<Record<string, ResolvedFlag>>({});
+
+  const onFlagResolved = useCallback((flagName: string, prUrl: string, sessionUrl: string) => {
+    setResolvedFlags((prev) => ({ ...prev, [flagName]: { prUrl, sessionUrl } }));
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -56,7 +66,11 @@ function App() {
           </button>
         </div>
 
-        {tab === "flags" ? <FlagTable /> : <RemovalHistory />}
+        {tab === "flags" ? (
+          <FlagTable resolvedFlags={resolvedFlags} onFlagResolved={onFlagResolved} />
+        ) : (
+          <RemovalHistory />
+        )}
       </div>
     </div>
   );

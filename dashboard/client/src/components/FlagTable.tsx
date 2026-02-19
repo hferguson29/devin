@@ -4,8 +4,14 @@ import FlagRow from "./FlagRow";
 import Tooltip from "./Tooltip";
 import { fetchFlags } from "../api/devin";
 import type { FeatureFlag } from "../api/devin";
+import type { ResolvedFlag } from "../App";
 
-export default function FlagTable() {
+interface FlagTableProps {
+  resolvedFlags: Record<string, ResolvedFlag>;
+  onFlagResolved: (flagName: string, prUrl: string, sessionUrl: string) => void;
+}
+
+export default function FlagTable({ resolvedFlags, onFlagResolved }: FlagTableProps) {
   const [flags, setFlags] = useState<FeatureFlag[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -71,7 +77,7 @@ export default function FlagTable() {
         </thead>
         <tbody>
           {flags.map((flag) => (
-            <FlagRow key={flag.name} flag={flag} />
+            <FlagRow key={flag.name} flag={flag} resolved={resolvedFlags[flag.name]} onResolved={onFlagResolved} />
           ))}
         </tbody>
       </table>

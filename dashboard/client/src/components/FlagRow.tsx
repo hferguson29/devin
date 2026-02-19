@@ -5,8 +5,12 @@ import ConfirmModal from "./ConfirmModal";
 import { createRemovalSession, fetchSessionStatus, addHistoryEntry } from "../api/devin";
 import type { FeatureFlag } from "../api/devin";
 
+import type { ResolvedFlag } from "../App";
+
 interface FlagRowProps {
   flag: FeatureFlag;
+  resolved?: ResolvedFlag;
+  onResolved: (flagName: string, prUrl: string, sessionUrl: string) => void;
 }
 
 type SessionState =
@@ -46,8 +50,10 @@ function sessionStatusColor(status: string): string {
   }
 }
 
-export default function FlagRow({ flag }: FlagRowProps) {
-  const [session, setSession] = useState<SessionState>({ kind: "idle" });
+export default function FlagRow({ flag, resolved, onResolved }: FlagRowProps) {
+  const [session, setSession] = useState<SessionState>(() =>
+    resolved ? { kind: "complete", url: resolved.sessionUrl, sessionId: "", prUrl: resolved.prUrl } : { kind: "idle" }
+  );
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const stopPolling = useCallback(() => {
@@ -73,6 +79,7 @@ export default function FlagRow({ flag }: FlagRowProps) {
           if (isDone) {
             stopPolling();
             setSession({ kind: "complete", url, sessionId, prUrl });
+            if (prUrl) onResolved(flag.name, prUrl, url);
             addHistoryEntry(flag.name, flag.status, prUrl).catch(() => {});
           } else if (
             details.status === "failed" ||
@@ -94,7 +101,7 @@ export default function FlagRow({ flag }: FlagRowProps) {
         }
       }, POLL_INTERVAL);
     },
-    [stopPolling, flag.name, flag.status]
+    [stopPolling, onResolved, flag.name, flag.status]
   );
 
   useEffect(() => {
