@@ -1,5 +1,4 @@
 [
   { "name": "flag_dark_mode", "status": "active", "description": "Enables dark mode UI" },
-  { "name": "flag_new_checkout", "status": "active", "description": "New checkout flow" },
   { "name": "flag_legacy_api", "status": "inactive", "description": "Legacy API support" }
 ]
