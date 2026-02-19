@@ -19,7 +19,7 @@ type SessionState =
   | { kind: "failed"; url: string; sessionId: string }
   | { kind: "error"; message: string };
 
-const POLL_INTERVAL = 12000;
+const POLL_INTERVAL = 5000;
 
 function sessionStatusLabel(status: string): string {
   switch (status) {
@@ -66,11 +66,19 @@ export default function FlagRow({ flag }: FlagRowProps) {
           const details = await fetchSessionStatus(sessionId);
           const prUrl = details.pull_requests?.[0]?.pr_url;
 
-          if (details.status === "stopped" || details.status === "finished") {
+          const isDone =
+            details.status === "stopped" ||
+            details.status === "finished" ||
+            !!prUrl;
+
+          if (isDone) {
             stopPolling();
             setSession({ kind: "complete", url, sessionId, prUrl });
             addHistoryEntry(flag.name, flag.status, prUrl).catch(() => {});
-          } else if (details.status === "failed") {
+          } else if (
+            details.status === "failed" ||
+            details.status === "error"
+          ) {
             stopPolling();
             setSession({ kind: "failed", url, sessionId });
           } else {
@@ -180,7 +188,7 @@ export default function FlagRow({ flag }: FlagRowProps) {
             {session.kind === "complete" && (
               <div className="flex flex-col items-end gap-1.5">
                 <span className="inline-flex items-center gap-1.5 rounded-md bg-green-50 px-3 py-1.5 text-xs font-medium text-green-700 ring-1 ring-green-200">
-                  Complete
+                  {session.prUrl ? "PR Opened" : "Complete"}
                 </span>
                 {session.prUrl && (
                   <a
