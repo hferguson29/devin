@@ -61,7 +61,11 @@ export default function FlagTable() {
               Description
             </th>
             <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">
-              Action
+              <span className="float-right">
+                <Tooltip text="Triggers a Devin session to find all references to this flag, resolve the code branches, and open a pull request.">
+                  <span className="cursor-help border-b border-dashed border-gray-400">Action</span>
+                </Tooltip>
+              </span>
             </th>
           </tr>
         </thead>
