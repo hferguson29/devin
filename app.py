@@ -59,12 +59,10 @@ def create_modern_api_client(version: str) -> dict:
 def render_dashboard(user: dict) -> dict:
     sections = ["overview", "reports"]
 
-    if flags["flag_beta_dashboard"]:
-        sections.extend(["analytics", "insights", "cohorts"])
-        print("Beta dashboard features enabled")
+    sections.extend(["analytics", "insights", "cohorts"])
 
     return {
         "user": user["id"],
         "sections": sections,
-        "beta": True if flags["flag_beta_dashboard"] else False,
+        "beta": True,
     }

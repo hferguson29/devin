@@ -27,10 +27,8 @@ const config = {
   },
 
   dashboard: {
-    enableBetaFeatures: flags.flag_beta_dashboard,
-    tabs: flags.flag_beta_dashboard
-      ? ['overview', 'reports', 'analytics', 'insights', 'cohorts']
-      : ['overview', 'reports'],
+    enableBetaFeatures: true,
+    tabs: ['overview', 'reports', 'analytics', 'insights', 'cohorts'],
   },
 };
 
