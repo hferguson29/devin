@@ -20,14 +20,10 @@ describe('applyTheme', () => {
 describe('handleCheckout', () => {
   const cart = { items: [{ price: 10 }, { price: 20 }] };
 
-  it('uses new checkout flow when flag_new_checkout is active', () => {
+  it('uses new checkout flow', () => {
     const result = handleCheckout(cart);
-    if (flags.flag_new_checkout) {
-      expect(result.flow).toBe('new');
-      expect(result.total).toBe(30);
-    } else {
-      expect(result.flow).toBe('legacy');
-    }
+    expect(result.flow).toBe('new');
+    expect(result.total).toBe(30);
   });
 });
 
