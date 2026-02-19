@@ -64,7 +64,7 @@ export default function FlagRow({ flag }: FlagRowProps) {
       intervalRef.current = setInterval(async () => {
         try {
           const details = await fetchSessionStatus(sessionId);
-          const prUrl = details.pull_requests?.[0]?.pr_url;
+          const prUrl = details.pull_request?.url;
 
           const isDone =
             details.status === "stopped" ||

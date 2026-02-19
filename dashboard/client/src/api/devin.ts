@@ -16,7 +16,7 @@ export interface SessionDetails {
   session_id: string;
   url: string;
   status: string;
-  pull_requests?: { pr_url: string; pr_state: string }[];
+  pull_request?: { url: string } | null;
 }
 
 export async function fetchFlags(): Promise<FeatureFlag[]> {
