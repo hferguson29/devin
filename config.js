@@ -15,9 +15,8 @@ const config = {
   },
 
   api: {
-    baseUrl: flags.flag_legacy_api ? '/api/v1' : '/api/v2',
-    timeout: flags.flag_legacy_api ? 10000 : 5000,
-    useLegacy: flags.flag_legacy_api,
+    baseUrl: '/api/v2',
+    timeout: 5000,
   },
 
   checkout: {
