@@ -60,17 +60,12 @@ function createModernApiClient(version) {
 
 // ---- Dashboard ----
 function renderDashboard(user) {
-  const sections = ['overview', 'reports'];
-
-  if (flags.flag_beta_dashboard) {
-    sections.push('analytics', 'insights', 'cohorts');
-    console.log('Beta dashboard features enabled');
-  }
+  const sections = ['overview', 'reports', 'analytics', 'insights', 'cohorts'];
 
   return {
     user: user.id,
     sections,
-    beta: flags.flag_beta_dashboard ? true : false,
+    beta: true,
   };
 }
 
