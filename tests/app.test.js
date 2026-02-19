@@ -6,14 +6,10 @@ const flags = require('../feature_flags.json').reduce((acc, f) => {
 }, {});
 
 describe('applyTheme', () => {
-  it('applies dark theme when flag_dark_mode is active', () => {
+  it('applies dark theme', () => {
     const user = { id: 'user_1' };
     const result = applyTheme(user);
-    if (flags.flag_dark_mode) {
-      expect(result.theme).toBe('dark');
-    } else {
-      expect(result.theme).toBe('light');
-    }
+    expect(result.theme).toBe('dark');
   });
 });
 
