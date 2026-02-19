@@ -19,23 +19,13 @@ def apply_theme(user: dict) -> dict:
 
 # ---- Checkout ----
 def handle_checkout(cart: dict) -> dict:
-    if flags["flag_new_checkout"]:
-        print("Using new checkout flow")
-        return new_checkout_flow(cart)
-    else:
-        print("Using legacy checkout flow")
-        return legacy_checkout_flow(cart)
+    print("Using new checkout flow")
+    return new_checkout_flow(cart)
 
 
 def new_checkout_flow(cart: dict) -> dict:
     total = sum(item["price"] for item in cart["items"])
     return {"success": True, "total": total, "flow": "new"}
-
-
-def legacy_checkout_flow(cart: dict) -> dict:
-    subtotal = sum(item["price"] for item in cart["items"])
-    tax = subtotal * 0.08
-    return {"success": True, "total": subtotal + tax, "flow": "legacy"}
 
 
 # ---- API ----
