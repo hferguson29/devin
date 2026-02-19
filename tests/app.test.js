@@ -32,15 +32,10 @@ describe('handleCheckout', () => {
 });
 
 describe('getApiClient', () => {
-  it('returns legacy client when flag_legacy_api is active', () => {
+  it('returns modern client', () => {
     const client = getApiClient('1.0');
-    if (flags.flag_legacy_api) {
-      expect(client.legacy).toBe(true);
-      expect(client.baseUrl).toBe('/api/v1');
-    } else {
-      expect(client.legacy).toBe(false);
-      expect(client.baseUrl).toBe('/api/v2');
-    }
+    expect(client.legacy).toBe(false);
+    expect(client.baseUrl).toBe('/api/v2');
   });
 });
 

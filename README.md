@@ -10,7 +10,6 @@ This repo contains a set of active and inactive feature flags along with source 
 |------|--------|-------------|
 | `flag_dark_mode` | active | Enables dark mode UI |
 | `flag_new_checkout` | active | New checkout flow |
-| `flag_legacy_api` | inactive | Legacy API support |
 | `flag_beta_dashboard` | active | Beta analytics dashboard |
 
 ## File Structure
