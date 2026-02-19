@@ -45,15 +45,10 @@ describe('getApiClient', () => {
 });
 
 describe('renderDashboard', () => {
-  it('includes beta sections when flag_beta_dashboard is active', () => {
+  it('includes beta sections in dashboard', () => {
     const user = { id: 'user_1' };
     const result = renderDashboard(user);
-    if (flags.flag_beta_dashboard) {
-      expect(result.sections).toContain('analytics');
-      expect(result.beta).toBe(true);
-    } else {
-      expect(result.sections).not.toContain('analytics');
-      expect(result.beta).toBe(false);
-    }
+    expect(result.sections).toContain('analytics');
+    expect(result.beta).toBe(true);
   });
 });
