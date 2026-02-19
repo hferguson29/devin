@@ -2,15 +2,18 @@ import { AlertTriangle, X } from "lucide-react";
 
 interface ConfirmModalProps {
   flagName: string;
+  flagStatus: string;
   onConfirm: () => void;
   onCancel: () => void;
 }
 
 export default function ConfirmModal({
   flagName,
+  flagStatus,
   onConfirm,
   onCancel,
 }: ConfirmModalProps) {
+  const isActive = flagStatus === "active";
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div className="relative w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
@@ -30,11 +33,12 @@ export default function ConfirmModal({
               Remove Feature Flag
             </h3>
             <p className="mt-2 text-sm text-gray-600">
-              Are you sure you want to remove{" "}
               <code className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-sm text-gray-900">
                 {flagName}
-              </code>
-              ? This will open a PR to delete all references to this flag.
+              </code>{" "}
+              is currently {isActive ? "active" : "inactive"}. Devin will keep
+              the {isActive ? "enabled" : "disabled"} code path and remove all
+              flag conditionals, then open a PR.
             </p>
           </div>
         </div>

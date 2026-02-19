@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Loader2, AlertCircle, Flag } from "lucide-react";
 import FlagRow from "./FlagRow";
+import Tooltip from "./Tooltip";
 import { fetchFlags } from "../api/devin";
 import type { FeatureFlag } from "../api/devin";
 
@@ -52,7 +53,9 @@ export default function FlagTable() {
               Flag Name
             </th>
             <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500">
-              Status
+              <Tooltip text="Whether this flag is currently enabled in the codebase. Active flags run the 'on' code path; inactive flags run the 'off' path. Both can be safely removed — Devin will preserve the correct code branch automatically.">
+                <span className="cursor-help border-b border-dashed border-gray-400">Status</span>
+              </Tooltip>
             </th>
             <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500">
               Description

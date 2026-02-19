@@ -2,7 +2,8 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { ExternalLink, Loader2, GitPullRequest } from "lucide-react";
 import StatusBadge from "./StatusBadge";
 import ConfirmModal from "./ConfirmModal";
-import { createRemovalSession, fetchSessionStatus } from "../api/devin";
+import Tooltip from "./Tooltip";
+import { createRemovalSession, fetchSessionStatus, addHistoryEntry } from "../api/devin";
 import type { FeatureFlag } from "../api/devin";
 
 interface FlagRowProps {
@@ -68,6 +69,7 @@ export default function FlagRow({ flag }: FlagRowProps) {
           if (details.status === "stopped" || details.status === "finished") {
             stopPolling();
             setSession({ kind: "complete", url, sessionId, prUrl });
+            addHistoryEntry(flag.name, flag.status, prUrl).catch(() => {});
           } else if (details.status === "failed") {
             stopPolling();
             setSession({ kind: "failed", url, sessionId });
@@ -85,7 +87,7 @@ export default function FlagRow({ flag }: FlagRowProps) {
         }
       }, POLL_INTERVAL);
     },
-    [stopPolling]
+    [stopPolling, flag.name, flag.status]
   );
 
   useEffect(() => {
@@ -129,12 +131,14 @@ export default function FlagRow({ flag }: FlagRowProps) {
         <td className="px-6 py-4">
           <div className="flex flex-col items-end gap-2">
             {session.kind === "idle" && (
-              <button
-                onClick={() => setSession({ kind: "confirm" })}
-                className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 transition-colors"
-              >
-                Remove
-              </button>
+              <Tooltip text="Triggers a Devin session to find all references to this flag, resolve the code branches, and open a pull request.">
+                <button
+                  onClick={() => setSession({ kind: "confirm" })}
+                  className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 transition-colors"
+                >
+                  Remove
+                </button>
+              </Tooltip>
             )}
 
             {session.kind === "confirm" && (
@@ -242,6 +246,7 @@ export default function FlagRow({ flag }: FlagRowProps) {
       {session.kind === "confirm" && (
         <ConfirmModal
           flagName={flag.name}
+          flagStatus={flag.status}
           onConfirm={handleRemove}
           onCancel={() => setSession({ kind: "idle" })}
         />

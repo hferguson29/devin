@@ -21,6 +21,8 @@ if (!DEVIN_API_KEY) {
 const GITHUB_RAW_URL =
   "https://raw.githubusercontent.com/hferguson29/devin/main/feature_flags.json";
 
+const removalHistory = [];
+
 app.get("/api/flags", async (_req, res) => {
   try {
     const response = await fetch(GITHUB_RAW_URL);
@@ -80,6 +82,25 @@ Be thorough. Check all file types including JS, TS, Python, config files, and te
     console.error("Error creating Devin session:", err.message);
     res.status(500).json({ error: "Failed to create Devin session" });
   }
+});
+
+app.get("/api/history", (_req, res) => {
+  res.json(removalHistory);
+});
+
+app.post("/api/history", (req, res) => {
+  const { flagName, flagStatus, prUrl } = req.body;
+  if (!flagName) {
+    return res.status(400).json({ error: "flagName is required" });
+  }
+  const entry = {
+    flagName,
+    flagStatus: flagStatus || "unknown",
+    removedAt: new Date().toISOString(),
+    prUrl: prUrl || null,
+  };
+  removalHistory.unshift(entry);
+  res.json(entry);
 });
 
 app.get("/api/sessions/:sessionId", async (req, res) => {

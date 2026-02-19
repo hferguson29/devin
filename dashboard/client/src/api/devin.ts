@@ -37,6 +37,37 @@ export async function fetchSessionStatus(
   return res.json();
 }
 
+export interface HistoryEntry {
+  flagName: string;
+  flagStatus: string;
+  removedAt: string;
+  prUrl: string | null;
+}
+
+export async function fetchHistory(): Promise<HistoryEntry[]> {
+  const res = await fetch(`${API_BASE}/api/history`);
+  if (!res.ok) {
+    throw new Error("Failed to fetch removal history");
+  }
+  return res.json();
+}
+
+export async function addHistoryEntry(
+  flagName: string,
+  flagStatus: string,
+  prUrl?: string
+): Promise<HistoryEntry> {
+  const res = await fetch(`${API_BASE}/api/history`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ flagName, flagStatus, prUrl }),
+  });
+  if (!res.ok) {
+    throw new Error("Failed to add history entry");
+  }
+  return res.json();
+}
+
 export async function createRemovalSession(
   flagName: string
 ): Promise<SessionResponse> {
