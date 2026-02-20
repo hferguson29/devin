@@ -8,12 +8,8 @@ flags = {flag["name"]: flag["status"] == "active" for flag in raw_flags}
 
 # ---- UI Theme ----
 def apply_theme(user: dict) -> dict:
-    if flags["flag_dark_mode"]:
-        user["theme"] = "dark"
-        print(f"Dark mode enabled for user: {user['id']}")
-    else:
-        user["theme"] = "light"
-        print(f"Light mode enabled for user: {user['id']}")
+    user["theme"] = "dark"
+    print(f"Dark mode enabled for user: {user['id']}")
     return user
 
 
