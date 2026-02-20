@@ -21,9 +21,9 @@ const config = {
   },
 
   checkout: {
-    flow: flags.flag_new_checkout ? 'new' : 'legacy',
-    enableGuestCheckout: flags.flag_new_checkout,
-    enableExpressCheckout: flags.flag_new_checkout,
+    flow: 'new',
+    enableGuestCheckout: true,
+    enableExpressCheckout: true,
   },
 
   dashboard: {
