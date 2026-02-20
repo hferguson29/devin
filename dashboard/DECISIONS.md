@@ -24,11 +24,13 @@ This was a bug fix, not an upfront design decision, and I think that's worth bei
 
 The initial implementation stored all session state — idle, polling, complete, PR URL — inside each `FlagRow` component. This worked fine as long as the flag table stayed mounted. But the dashboard has two tabs (Feature Flags and Removal History), and switching tabs unmounts and remounts the flag table. When you switched to the history tab and back, every flag row re-initialized with `{ kind: "idle" }`, losing the fact that a session had already completed with a PR URL. Flags that were in "PR Opened" state suddenly showed a Remove button again.
 
-The fix was to lift a `resolvedFlags` map to the `App` component, which never unmounts because it renders both tabs. When a session resolves with a PR URL, `FlagRow` calls `onResolved` to update the parent's state. When the flag table remounts, each `FlagRow` checks whether it has a `resolved` prop and initializes accordingly.
+The fix had two parts. First, we lifted a `resolvedFlags` map to the `App` component. When a session resolves with a PR URL, `FlagRow` calls `onResolved` to update the parent's state. When the flag table mounts, each `FlagRow` checks whether it has a `resolved` prop and initializes accordingly. This is a textbook example of React's state ownership problem: if a piece of state needs to survive a component unmounting, it can't live in that component.
 
-This is a textbook example of React's state ownership problem. The rule of thumb is: if a piece of state needs to survive a component unmounting, it can't live in that component. We could have avoided this by rendering both tabs simultaneously and hiding one with CSS, but that felt like papering over the real issue. The state genuinely belongs to a longer-lived ancestor.
+Second, we changed the tab rendering from conditional (`{tab === "flags" ? <FlagTable /> : <RemovalHistory />}`) to simultaneous rendering with Tailwind's `hidden` class. Both tabs are always mounted; only one is visible. This prevents `FlagRow` components from unmounting during tab switches, which means active polling intervals survive navigation. The state lifting alone wasn't enough because it only covered the "complete" case — a flag mid-polling would still lose its interval and reset to idle on remount.
 
-One tradeoff: the resolved state is still in-memory React state, so it's lost on a full page refresh. We accepted this because the removal history (which persists on the backend, at least for the lifetime of the server process) serves as the durable record. The resolved state in the parent is purely a UI convenience for the current browser session.
+We also solved the page-refresh problem. On mount, `App` fetches the removal history from the backend and seeds `resolvedFlags` with any entries that have a PR URL. This means flags that previously had PRs opened restore to "PR Opened" state after a full refresh, as long as the backend is still running. The backend history doesn't store session URLs, so the "View session" link is hidden for hydrated flags — only the PR link matters after a refresh.
+
+The combination of state lifting, simultaneous tab rendering, and history hydration gives us state persistence across tab switches, mid-polling navigation, and full page refreshes. Each layer solves a different failure mode, and all three are necessary.
 
 ## Why Flags Stay Visible After Removal
 
@@ -72,6 +74,16 @@ The tooltips on the STATUS and ACTION column headers are rendered using React's 
 This is a well-known problem with tooltips inside scrollable or overflow-clipped containers. The tooltip is a child of the table header cell, but its visual position extends beyond the table boundary. The browser clips it because the table's overflow rules say to. Portaling the tooltip to the body element removes it from the table's layout context entirely, so it renders on top of everything.
 
 The tradeoff is slightly more complex positioning logic — the tooltip needs to calculate its position using `getBoundingClientRect` and account for scroll offsets — but this is a solved problem and the complexity is contained within the `Tooltip` component.
+
+## Polling Deduplication
+
+The polling logic uses two mutable refs — `pollInFlightRef` and `terminalHandledRef` — to prevent edge cases that emerged during testing.
+
+`pollInFlightRef` gates the interval callback so a slow `fetchSessionStatus` response doesn't cause concurrent requests to pile up. If a poll tick fires while a previous fetch is still in flight, the tick is skipped. This is a simple form of backpressure that prevents request pileup when the Devin API is slow to respond.
+
+`terminalHandledRef` prevents the more subtle problem of duplicate terminal handling. When a session completes (PR URL detected), the handler writes a history entry and calls `onResolved`. Without the guard, two overlapping ticks could both see the PR URL, both pass the `pollInFlightRef` gate (if the first completes just as the second starts), and both write history entries. The terminal ref ensures that once any tick handles the terminal state, all subsequent ticks are no-ops.
+
+These are defensive measures that may never trigger in practice — the 5-second interval and typical API response times make collisions unlikely. But polling edge cases are notoriously hard to reproduce and debug, so the guards are worth their two lines of code.
 
 ## In-Memory History
 
