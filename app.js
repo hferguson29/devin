@@ -44,16 +44,7 @@ function legacyCheckoutFlow(cart) {
 
 // ---- API ----
 function getApiClient(version) {
-  if (flags.flag_legacy_api) {
-    console.warn('Legacy API enabled — this will be deprecated soon');
-    return createLegacyApiClient(version);
-  } else {
-    return createModernApiClient(version);
-  }
-}
-
-function createLegacyApiClient(version) {
-  return { version, baseUrl: '/api/v1', legacy: true };
+  return createModernApiClient(version);
 }
 
 function createModernApiClient(version) {
