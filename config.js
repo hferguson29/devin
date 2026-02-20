@@ -10,8 +10,8 @@ const config = {
   },
 
   ui: {
-    theme: flags.flag_dark_mode ? 'dark' : 'light',
-    showThemeToggle: flags.flag_dark_mode,
+    theme: 'dark',
+    showThemeToggle: true,
   },
 
   api: {
