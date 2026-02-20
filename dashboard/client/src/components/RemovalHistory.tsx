@@ -11,7 +11,10 @@ export default function RemovalHistory() {
   useEffect(() => {
     const load = () => {
       fetchHistory()
-        .then(setEntries)
+        .then((data) => {
+          setEntries(data);
+          setError(null);
+        })
         .catch((err) => setError(err.message))
         .finally(() => setLoading(false));
     };
