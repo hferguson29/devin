@@ -5,15 +5,17 @@ const flags = require('./feature_flags.json').reduce((acc, f) => {
 
 // ---- UI Theme ----
 function applyTheme(user) {
+  const hasDocument = typeof document !== 'undefined' && document.body;
   if (flags.flag_dark_mode) {
-    document.body.classList.add('dark-theme');
+    if (hasDocument) document.body.classList.add('dark-theme');
     user.theme = 'dark';
     console.log('Dark mode enabled for user:', user.id);
   } else {
-    document.body.classList.add('light-theme');
+    if (hasDocument) document.body.classList.add('light-theme');
     user.theme = 'light';
     console.log('Light mode enabled for user:', user.id);
   }
+  return user;
 }
 
 // ---- Checkout ----
