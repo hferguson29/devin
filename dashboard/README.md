@@ -8,7 +8,9 @@ The dashboard connects to a `feature_flags.json` file hosted in a GitHub reposit
 
 When you click **Remove** on a flag, a confirmation modal explains what Devin will do based on the flag's current status: for active flags, Devin keeps the enabled code path; for inactive flags, Devin keeps the disabled code path. After you confirm, the backend creates a Devin API session with a detailed prompt instructing Devin to find all references to the flag, remove the conditional logic, clean up dead code, and open a pull request.
 
-The frontend then polls the Devin API every 5 seconds to track the session's progress. Once Devin creates a pull request, the dashboard detects the PR URL in the API response, stops polling, and transitions the flag to a permanent "PR Opened" state with a direct link to the PR. The flag stays visible in this state so the team can see which flags have pending removal PRs. The removal is also logged to an in-memory history that's viewable in the Removal History tab.
+The frontend then polls the Devin API every 5 seconds to track the session's progress. Polling is deduplicated so overlapping ticks never produce concurrent requests or duplicate history writes. Once Devin creates a pull request, the dashboard detects the PR URL in the API response, stops polling, and transitions the flag to a permanent "PR Opened" state with a direct link to the PR. The flag stays visible in this state so the team can see which flags have pending removal PRs. The removal is also logged to an in-memory history that's viewable in the Removal History tab.
+
+State is persisted across both tab switches and full page refreshes. Both tabs are rendered simultaneously (toggled with CSS) so active polling survives tab navigation. On page load, the app hydrates resolved flag state from the backend removal history, restoring "PR Opened" badges for any flags that were previously removed.
 
 ## Tech Stack
 
@@ -67,7 +69,7 @@ dashboard/
     package.json          Backend dependencies (express, cors, dotenv)
   client/
     src/
-      App.tsx             Root component: tab switching, resolved flag state management
+      App.tsx             Root component: tab rendering, resolved flag state management, history hydration
       api/
         devin.ts          API client: typed fetch functions for flags, sessions, and history
       components/

@@ -19,7 +19,7 @@ type SessionState =
   | { kind: "loading" }
   | { kind: "polling"; url: string; sessionId: string; status: string; prUrl?: string }
   | { kind: "complete"; url: string; sessionId: string; prUrl?: string }
-  | { kind: "failed"; url: string; sessionId: string }
+  | { kind: "failed"; url: string; sessionId: string; reason?: string }
   | { kind: "error"; message: string };
 
 const POLL_INTERVAL = 5000;
@@ -55,6 +55,8 @@ export default function FlagRow({ flag, resolved, onResolved }: FlagRowProps) {
     resolved ? { kind: "complete", url: resolved.sessionUrl, sessionId: "", prUrl: resolved.prUrl } : { kind: "idle" }
   );
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pollInFlightRef = useRef(false);
+  const terminalHandledRef = useRef(false);
 
   const stopPolling = useCallback(() => {
     if (intervalRef.current) {
@@ -66,25 +68,32 @@ export default function FlagRow({ flag, resolved, onResolved }: FlagRowProps) {
   const startPolling = useCallback(
     (sessionId: string, url: string) => {
       stopPolling();
+      terminalHandledRef.current = false;
       intervalRef.current = setInterval(async () => {
+        if (pollInFlightRef.current || terminalHandledRef.current) return;
+        pollInFlightRef.current = true;
         try {
           const details = await fetchSessionStatus(sessionId);
           const prUrl = details.pull_request?.url;
 
-          const isDone =
-            details.status === "stopped" ||
-            details.status === "finished" ||
-            !!prUrl;
-
-          if (isDone) {
+          if (prUrl) {
+            terminalHandledRef.current = true;
             stopPolling();
             setSession({ kind: "complete", url, sessionId, prUrl });
-            if (prUrl) onResolved(flag.name, prUrl, url);
+            onResolved(flag.name, prUrl, url);
             addHistoryEntry(flag.name, flag.status, prUrl).catch(() => {});
+          } else if (
+            details.status === "stopped" ||
+            details.status === "finished"
+          ) {
+            terminalHandledRef.current = true;
+            stopPolling();
+            setSession({ kind: "failed", url, sessionId, reason: "Session finished without a PR URL." });
           } else if (
             details.status === "failed" ||
             details.status === "error"
           ) {
+            terminalHandledRef.current = true;
             stopPolling();
             setSession({ kind: "failed", url, sessionId });
           } else {
@@ -98,6 +107,8 @@ export default function FlagRow({ flag, resolved, onResolved }: FlagRowProps) {
           }
         } catch {
           // keep polling on transient errors
+        } finally {
+          pollInFlightRef.current = false;
         }
       }, POLL_INTERVAL);
     },
@@ -205,15 +216,17 @@ export default function FlagRow({ flag, resolved, onResolved }: FlagRowProps) {
                     View PR
                   </a>
                 )}
-                <a
-                  href={session.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700"
-                >
-                  View session
-                  <ExternalLink className="h-3 w-3" />
-                </a>
+                {session.url && (
+                  <a
+                    href={session.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700"
+                  >
+                    View session
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                )}
               </div>
             )}
 
@@ -222,6 +235,9 @@ export default function FlagRow({ flag, resolved, onResolved }: FlagRowProps) {
                 <span className="inline-flex items-center rounded-md bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 ring-1 ring-red-200">
                   Failed
                 </span>
+                {session.reason && (
+                  <span className="text-xs text-red-500">{session.reason}</span>
+                )}
                 <a
                   href={session.url}
                   target="_blank"
