@@ -216,15 +216,17 @@ export default function FlagRow({ flag, resolved, onResolved }: FlagRowProps) {
                     View PR
                   </a>
                 )}
-                <a
-                  href={session.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700"
-                >
-                  View session
-                  <ExternalLink className="h-3 w-3" />
-                </a>
+                {session.url && (
+                  <a
+                    href={session.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700"
+                  >
+                    View session
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                )}
               </div>
             )}
 
