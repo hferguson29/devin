@@ -40,15 +40,7 @@ def legacy_checkout_flow(cart: dict) -> dict:
 
 # ---- API ----
 def get_api_client(version: str) -> dict:
-    if flags["flag_legacy_api"]:
-        print("Warning: Legacy API enabled — this will be deprecated soon")
-        return create_legacy_api_client(version)
-    else:
-        return create_modern_api_client(version)
-
-
-def create_legacy_api_client(version: str) -> dict:
-    return {"version": version, "base_url": "/api/v1", "legacy": True}
+    return create_modern_api_client(version)
 
 
 def create_modern_api_client(version: str) -> dict:
