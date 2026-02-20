@@ -1,7 +1,8 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Github } from "lucide-react";
 import FlagTable from "./components/FlagTable";
 import RemovalHistory from "./components/RemovalHistory";
+import { fetchHistory } from "./api/devin";
 
 type Tab = "flags" | "history";
 
@@ -16,6 +17,20 @@ function App() {
 
   const onFlagResolved = useCallback((flagName: string, prUrl: string, sessionUrl: string) => {
     setResolvedFlags((prev) => ({ ...prev, [flagName]: { prUrl, sessionUrl } }));
+  }, []);
+
+  useEffect(() => {
+    fetchHistory()
+      .then((entries) => {
+        const seed: Record<string, ResolvedFlag> = {};
+        for (const entry of entries) {
+          if (entry.prUrl) {
+            seed[entry.flagName] = { prUrl: entry.prUrl, sessionUrl: "" };
+          }
+        }
+        setResolvedFlags((prev) => ({ ...seed, ...prev }));
+      })
+      .catch(() => {});
   }, []);
 
   return (
@@ -66,11 +81,12 @@ function App() {
           </button>
         </div>
 
-        {tab === "flags" ? (
+        <div className={tab !== "flags" ? "hidden" : ""}>
           <FlagTable resolvedFlags={resolvedFlags} onFlagResolved={onFlagResolved} />
-        ) : (
+        </div>
+        <div className={tab !== "history" ? "hidden" : ""}>
           <RemovalHistory />
-        )}
+        </div>
       </div>
     </div>
   );
